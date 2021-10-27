@@ -2,7 +2,7 @@ package by.it.academy.example;
 
 import java.io.Serializable;
 
-public class CommandsSQL implements Serializable {
+public class CommandsSQL {
     private static String update;
     private static String insert;
     private static String delete;

@@ -3,10 +3,6 @@ package by.it.academy.example.dao;
 
 import by.it.academy.example.CommandsSQL;
 import by.it.academy.example.UserInformationJDBC;
-import com.zaxxer.hikari.pool.HikariPool;
-
-
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,14 +10,16 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class TestDaoImpl<S,P> implements TestDAO<S,P>{
+public class TestDaoImpl<S> implements TestDAO<S,CommandsSQL>{
     private Connection connection;
-    private HikariPool connectionPool;
+
 
     public TestDaoImpl() {
-        connection = UserInformationJDBC.getConnection();
+        connection = UserInformationJDBC.getPoolConnection();
         try {
-            connectionPool.getConnection();
+            if (connection != null) {
+                connection.setAutoCommit(false);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,12 +56,12 @@ public class TestDaoImpl<S,P> implements TestDAO<S,P>{
 
 
     @Override
-    public P save(P p) throws SQLException {
-        String sql = CommandsSQL.getInsert();
+    public CommandsSQL save(CommandsSQL id) throws SQLException {
+        String sql = id.getInsert();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             int count = statement.executeUpdate();
             connection.commit();
-            return null;
+            return id;
         } catch (Exception e) {
             connection.rollback();
             return null;
@@ -72,27 +70,28 @@ public class TestDaoImpl<S,P> implements TestDAO<S,P>{
     }
 
     @Override
-    public P get(Serializable id) throws SQLException {
-        String sql = CommandsSQL.getSelect();
+    public CommandsSQL get(CommandsSQL id) throws SQLException {
+        String sql = id.getSelect();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet count = statement.executeQuery();
-            return null;
+            return id;
         } catch (Exception e) {
             return null;
         }
     }
 
     @Override
-    public void update(P p) throws SQLException {
-        String sql = CommandsSQL.getUpdate();
+    public int update(CommandsSQL id) throws SQLException {
+        String sql = id.getUpdate();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             int count = statement.executeUpdate();
+            return count;
         }
     }
 
     @Override
-    public int delete(Serializable id) throws SQLException {
-        String sql = CommandsSQL.getDelete();
+    public int delete(CommandsSQL id) throws SQLException {
+        String sql = id.getDelete();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             int count = statement.executeUpdate();
             if (count != 1) {
@@ -106,9 +105,9 @@ public class TestDaoImpl<S,P> implements TestDAO<S,P>{
     }
 
     @Override
-    public List<S> getAll() throws SQLException {
+    public List<S> getAll(CommandsSQL id) throws SQLException {
         List<S> lst = new LinkedList<>();
-        PreparedStatement ps = getPrepareStatement("SELECT * FROM test_db.jdbc_test");
+        PreparedStatement ps = getPrepareStatement(id.getSelect());
         try {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -128,13 +127,13 @@ public class TestDaoImpl<S,P> implements TestDAO<S,P>{
     }
 
     @Override
-    public S getOneByTwo() throws SQLException {
+    public int getOneByTwo() throws SQLException {
         String sql = CommandsSQL.getJoin();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet count = statement.executeQuery();
-            return null;
+            return 1;
         } catch (Exception e) {
-            return null;
+            return 0;
         }
     }
 }

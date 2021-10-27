@@ -15,8 +15,8 @@ public class Main {
         ResultSet rs = null;
 
         try {
-            Class.forName("org.postgresql.Driver");
-            conn = UserInformationJDBC.getConnection();
+            conn = UserInformationJDBC.getPoolConnection();
+
             if(conn != null) {
                 conn.setAutoCommit(false);
                 conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
@@ -37,7 +37,7 @@ public class Main {
                 }
                 logger.trace("Connection and operations in Main success");
             }
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             logger.error("There was an error in the class Main", e);
         } finally {
                 if (rs != null) {
